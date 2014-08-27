@@ -1,18 +1,25 @@
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from distutils.core import setup, Extension
 
 from Cython.Distutils import build_ext
 import pkg_resources
-
+import os
 data_dir = pkg_resources.resource_filename("autowrap", "data_files")
+
+include_dirs = [data_dir]
+library_dirs = ['/usr/local/lib']
+PLL_INSTALL_DIR = os.environ.get('PLL_INSTALL_DIR')
+if PLL_INSTALL_DIR:
+    if not os.path.isdir(PLL_INSTALL_DIR):
+        sys.exit('PLL_INSTALL_DIR found in env as "{}", but it is not a valid directory\n'.format(PLL_INSTALL_DIR))
+    include_dirs.append(os.path.join(PLL_INSTALL_DIR, 'include'))
+    library_dirs.append(os.path.join(PLL_INSTALL_DIR, 'lib'))
 
 ext = Extension("pllpy",
                 sources = ['src/pllpy.pyx', 'src/pllml.cpp'],
                 language="c++",
-                include_dirs = [data_dir],
+                include_dirs=include_dirs,
                 libraries=['pll-sse3-pthreads'],
+                library_dirs=library_dirs,
                 extra_compile_args=['-std=c++11'],
                )
 
